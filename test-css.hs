@@ -147,6 +147,10 @@ main = hspecX $ [describe "hxt-css-selectors" $
         , it "should match descendants in sibling nodes" $ do
             res <- testSel [css|p.first ~ ul li|] (getName &&& getAttrValue "class")
             res @?= [("li","one"),("li","two"),("li","three")]
+
+        , it "should match elements that contain an attribute" $ do
+            res <- testSel [css|*[id]|] (getName &&& getAttrValue "id")
+            res @?= [("section","header"),("section","content"),("section","footer")]
         ]
 
     , describe "processing" $

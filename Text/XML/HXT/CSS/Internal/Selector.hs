@@ -1,7 +1,7 @@
 
 module Text.XML.HXT.CSS.Internal.Selector where
 
-import Control.Applicative ((<$>),(*>))
+import Control.Applicative ((<$>),(*>),(<*))
 import Control.Monad
 import Control.Monad.Instances
 import Data.Char
@@ -21,6 +21,7 @@ data Selector
     | SelectAny
     | PrecededBy Selector Selector
     | AdjacentTo Selector Selector
+    | AttrExists String
     deriving (Eq, Show)
 
 selectorToArrow :: (ArrowChoice a, ArrowXml a) => Selector -> a XmlTree XmlTree
@@ -29,6 +30,7 @@ selectorToArrow = step where
         SelectName name          -> hasName name
         SelectClass cls          -> hasClass cls
         SelectId id              -> hasId id
+        AttrExists attr          -> hasAttr attr
         Select many              -> seqA $ map step many
         DescendantOf (PrecededBy node left) parent ->
             step parent >>> multi (preceding (step left) >>> step node)
@@ -50,15 +52,18 @@ parseSelector :: String -> Maybe Selector
 parseSelector = either (const Nothing) (Just . adjust) . parse selector "" where
     selector = do
         sels <- sepBy1 (chainl1 pattern sep) (spaces >> string "," >> spaces)
+        eof
         return $ case sels of
             [single] -> single
             many     -> SelectAll many
 
     pattern = do
-        parts <- many1 $ star <|> cls <|> id' <|> name
+        parts <- many1 $ star <|> cls <|> id' <|> name <|> attr
         return $ case parts of
             [single] -> single
             many     -> Select many
+
+    attrFilter = AttrExists <$> ident
 
     sep = spaces *> (child <|> sibling <|> adjacent <|> descendant)
     descendant = return (flip DescendantOf)
@@ -70,6 +75,7 @@ parseSelector = either (const Nothing) (Just . adjust) . parse selector "" where
     cls  = char '.' *> (SelectClass <$> ident)
     id'  = char '#' *> (SelectId <$> ident)
     star = char '*' *> return SelectAny
+    attr = char '[' *> (spaces *> attrFilter <* spaces) <* char ']'
 
     ident = many1 . satisfy . anyOf $ [isAlpha, (`elem` "-_")]
 
