@@ -17,7 +17,7 @@ instance Show HtmlResult where
 
 testHtml :: IO (LA a XmlTree)
 testHtml = do
-    html <- readFile "test.html"
+    html <- readFile "test-html/test.html"
     return $ constA html >>> hread
 
 testSel :: Selector -> LA XmlTree b -> IO [b]
@@ -28,7 +28,7 @@ testSel sel op = do
 testProc :: FilePath -> Selector -> LA XmlTree XmlTree -> IO ()
 testProc fp sel op = do
     testPage <- testHtml
-    comparePage <- readFile $ fp ++ ".html"
+    comparePage <- readFile $ "test-html/" ++ fp ++ ".html"
     let actual   = HtmlResult $ runLA (testPage >>> process sel op >>> writeDocumentToString [withOutputHTML]) undefined
         expected = HtmlResult $ runLA (constA comparePage >>> hread >>> writeDocumentToString [withOutputHTML]) undefined
 
