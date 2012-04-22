@@ -151,6 +151,10 @@ main = hspecX $ [describe "hxt-css-selectors" $
         , it "should match elements that contain an attribute" $ do
             res <- testSel [css|*[id]|] (getName &&& getAttrValue "id")
             res @?= [("section","header"),("section","content"),("section","footer")]
+
+        , it "should match elements that contain a specific attribute value" $ do
+            res <- testSel [css|*[class="first"]|] (getName &&& getAttrValue "class")
+            res @?= [("a","first"),("p","first")]
         ]
 
     , describe "processing" $

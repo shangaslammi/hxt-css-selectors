@@ -22,6 +22,7 @@ data Selector
     | PrecededBy Selector Selector
     | AdjacentTo Selector Selector
     | AttrExists String
+    | AttrEquals String String
     deriving (Eq, Show)
 
 selectorToArrow :: (ArrowChoice a, ArrowXml a) => Selector -> a XmlTree XmlTree
@@ -31,6 +32,7 @@ selectorToArrow = step where
         SelectClass cls          -> hasClass cls
         SelectId id              -> hasId id
         AttrExists attr          -> hasAttr attr
+        AttrEquals attr value    -> hasAttrValue attr (==value)
         Select many              -> seqA $ map step many
         DescendantOf (PrecededBy node left) parent ->
             step parent >>> multi (preceding (step left) >>> step node)
@@ -63,9 +65,14 @@ parseSelector = either (const Nothing) (Just . adjust) . parse selector "" where
             [single] -> single
             many     -> Select many
 
-    attrFilter = AttrExists <$> ident
+    attrFilter = do
+        name <- ident
+        let exists = return $ AttrExists name
+            equals = token (char '=') *> (AttrEquals name <$> value)
+            value  = quoted (many $ noneOf "\"'") <|> many (noneOf "]")
+        equals <|> exists
 
-    sep = spaces *> (child <|> sibling <|> adjacent <|> descendant)
+    sep = token (child <|> sibling <|> adjacent <|> descendant)
     descendant = return (flip DescendantOf)
     child = string ">" *> spaces *> return (flip ChildOf)
     sibling = string "~" *> spaces *> return (flip PrecededBy)
@@ -75,9 +82,11 @@ parseSelector = either (const Nothing) (Just . adjust) . parse selector "" where
     cls  = char '.' *> (SelectClass <$> ident)
     id'  = char '#' *> (SelectId <$> ident)
     star = char '*' *> return SelectAny
-    attr = char '[' *> (spaces *> attrFilter <* spaces) <* char ']'
+    attr = char '[' *> (token attrFilter) <* char ']'
 
     ident = many1 . satisfy . anyOf $ [isAlpha, (`elem` "-_")]
+    quoted p = (char '\'' *> p <* char '\'') <|> (char '"' *> p <* char '"')
+    token p = spaces *> p <* spaces
 
 adjust :: Selector -> Selector
 adjust sel = case sel of
