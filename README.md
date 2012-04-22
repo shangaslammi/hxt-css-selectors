@@ -1,12 +1,12 @@
 
-= CSS Selectors for HXT
+# CSS Selectors for HXT
 
 This package adds css-style selectors to [HXT](http://hackage.haskell.org/package/hxt) that can be used for both querying and for processing sub-trees of HTML/XML documents.
 
 CSS selectors are constructed either with the quasi-quoter `css` which allows for compile time validation of the selector patterns, or by using the function `parseSelector :: String -> Maybe Selector`.
 
 
-== Examples
+## Examples
 
 ```haskell
 -- Find each link that is inside a text paragraph in the main content
@@ -17,7 +17,7 @@ ulToOl = process [css|div > ul|] $ setElemName (mkName "ol")
 ```
 
 
-== Current Status
+## Current Status
 
 hxt-css-selectors is a new project that is still mostly incomplete and highly unstable. My current priorities are
 
