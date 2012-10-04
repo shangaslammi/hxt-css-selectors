@@ -2,3 +2,4 @@ dist
 Setup.hs
 *.hi
 *.o
+cabal-dev
