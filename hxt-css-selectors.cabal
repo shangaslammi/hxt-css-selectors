@@ -10,7 +10,7 @@ Copyright:           Copyright (c) 2012 Sami Hangaslammi
 Category:            Text
 Stability:           alpha
 Homepage:            https://github.com/shangaslammi/hxt-css-selectors
-Tested-With:         ghc == 7.0.4
+Tested-With:         GHC == 7.0.4
 Build-type:          Simple
 Extra-source-files:  README.md, test-html/*.html
 Cabal-version:       >=1.2
