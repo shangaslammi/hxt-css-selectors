@@ -1,7 +1,7 @@
 
 module Text.XML.HXT.CSS.Internal.Selector where
 
-import Control.Applicative ((<$>),(*>),(<*))
+import Control.Applicative ((*>), (<$>), (<*), (<*>))
 import Control.Monad
 import Control.Monad.Instances
 import Data.Char
@@ -84,7 +84,7 @@ parseSelector = either (const Nothing) (Just . adjust) . parse selector "" where
     star = char '*' *> return SelectAny
     attr = char '[' *> (token attrFilter) <* char ']'
 
-    ident = many1 . satisfy . anyOf $ [isAlpha, (`elem` "-_")]
+    ident = (:) <$> satisfy isAlpha <*> many (satisfy . anyOf $ [isAlpha, isDigit, (`elem` "-_")])
     quoted p = (char '\'' *> p <* char '\'') <|> (char '"' *> p <* char '"')
     token p = spaces *> p <* spaces
 
