@@ -48,6 +48,12 @@ main = hspec $ describe "hxt-css-selectors" $ do
         it "should parse an id-selector" $ do
             [css|#footer|] @?= SelectId "footer"
 
+        it "should accept digits in class names" $ do
+            [css|.myClass123|] @?= SelectClass "myClass123"
+
+        it "should reject class names that begin with a digit" $ do
+            parseSelector ".123class" @?= Nothing
+
         it "should parse a combined name and class selector" $ do
             [css|p.first|] @?= Select [SelectName "p", SelectClass "first"]
 
