@@ -53,7 +53,8 @@ selectorToArrow = step where
 parseSelector :: String -> Maybe Selector
 parseSelector = either (const Nothing) (Just . adjust) . parse selector "" where
     selector = do
-        sels <- sepBy1 (chainl1 pattern sep) (spaces >> string "," >> spaces)
+        spaces -- skip leading whitespace
+        sels <- sepBy1 (chainl1 pattern sep) (string "," >> spaces)
         eof
         return $ case sels of
             [single] -> single
@@ -61,6 +62,7 @@ parseSelector = either (const Nothing) (Just . adjust) . parse selector "" where
 
     pattern = do
         parts <- many1 $ star <|> cls <|> id' <|> name <|> attr
+        spaces -- skip trailing whitespace from selector
         return $ case parts of
             [single] -> single
             many     -> Select many

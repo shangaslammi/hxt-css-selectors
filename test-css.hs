@@ -66,6 +66,12 @@ main = hspec $ describe "hxt-css-selectors" $ do
         it "should parse a descendant selector" $ do
             [css|#footer a|] @?= SelectName "a" `DescendantOf` SelectId "footer"
 
+        it "should parse a selector that contains leading whitespace" $ do
+            [css|   #footer a|] @?= SelectName "a" `DescendantOf` SelectId "footer"
+
+        it "should parse a selector that contains trailing whitespace" $ do
+            [css|#footer a   |] @?= SelectName "a" `DescendantOf` SelectId "footer"
+
         it "should parse direct child selection" $ do
             [css|section > a|] @?= SelectName "a" `ChildOf` SelectName "section"
 
